@@ -10,7 +10,7 @@ def hitung_risiko_pinjaman(pendapatan_bulanan, suku_bunga_baru, jumlah_pinjaman_
     # Debt-to-Income Ratio (DTI)
     pendapatan_tahunan = pendapatan_bulanan * 12
     estimasi_cicilan_lama = jumlah_pinjaman_sekarang * 0.05
-    debt_to_income_ratio = (estimasi_cicilan_lama + monthly_installment) / pendapatan_bulanan
+    debt_to_income_ratio = (estimasi_cicilan_lama + monthly_installment) / pendapatan_bulanan * 100
 
     remaining_income = pendapatan_bulanan - (monthly_installment + estimasi_cicilan_lama)
 
@@ -34,4 +34,20 @@ def hitung_risiko_pinjaman(pendapatan_bulanan, suku_bunga_baru, jumlah_pinjaman_
     urutan_kolom = ['pendapatan_tahunan', 'total_utang_saat_ini', 'jumlah_pinjaman_diajukan', 'tenor_bulan', 'bunga_tahunan', 'monthly_installment', 'debt_to_income_ratio', 'remaining_income', 'status_pekerjaan_encoded']
     df_final = df_final[urutan_kolom]
 
-    return df_final
+    # Load model XGBoost dan lakukan prediksi
+    model = joblib.load('./machine_learning/model_risiko_pinjaman_xgb.pkl')
+    prediksi = model.predict(df_final)[0]
+    prediksi_label = "TINGGI" if prediksi == 1 else "RENDAH"
+
+    return {
+        "success" : True,
+        "data" : {
+            "cicilan_bulanan" : int(monthly_installment),
+            "sisa_pendapatan" : int(remaining_income),
+            "rasio_hutang" :    round(debt_to_income_ratio,2),
+            "total_pinjaman" : int(jumlah_pinjaman_baru + jumlah_pinjaman_sekarang),
+            "prediksi_risiko" : prediksi_label
+        }
+        
+    }
+
