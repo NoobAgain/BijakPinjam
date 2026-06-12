@@ -3,64 +3,75 @@ import pandas as pd
 import numpy as np
 import joblib
 
-# SETTING HALAMAN UTAMA
+# 1. Konfigurasi Halaman Web
 st.set_page_config(
-    page_title="BijakPinjam - AI Loan Decision Support System",
-    page_icon="💰",
+    page_title="BijakPinjam - Credit Risk Assessment",
+    page_icon="🚀",
     layout="centered"
 )
 
-# LOAD MODEL XGBOOST YANG SUDAH DIOPTIMASI
+# Kustomisasi Desain Header
+st.title("🚀 AI Loan Decision Support System - BijakPinjam")
+st.markdown("---")
+st.markdown("### Aplikasi Analisis Risiko Kelayakan Pinjaman Nasabah")
+st.write("Aplikasi ini menggunakan model XGBoost untuk memprediksi tingkat risiko nasabah secara real-time guna menghindari *debt trap*.")
+
+# 2. Memuat File Artifacts (Model & Preprocessing Objects)
 @st.cache_resource
-def load_model():
-    # Memuat model final XGBoost yang telah kita simpan sebelumnya
-    return joblib.load('model_risiko_pinjaman_xgb.pkl')
+def load_artifacts():
+    # Memuat objek model dan preprocessing yang sudah diekspor sebelumnya
+    model = joblib.load('model_risiko_pinjaman_xgb.pkl')
+    scaler = joblib.load('scaler_finansial.joblib')
+    encoder_pekerjaan = joblib.load('encoder_status_pekerjaan.joblib')
+    encoder_kredit = joblib.load('encoder_status_kredit.joblib')
+    return model, scaler, encoder_pekerjaan, encoder_kredit
 
 try:
-    model = load_model()
+    model, scaler, encoder_pekerjaan, encoder_kredit = load_artifacts()
+    st.sidebar.success("✅ Semua file model & preprocessing berhasil dimuat!")
 except Exception as e:
-    st.error(f"Gagal memuat model. Pastikan file 'model_risiko_pinjaman_xgb.pkl' ada di folder yang sama. Error: {e}")
+    st.sidebar.error(f"❌ Gagal memuat file (.pkl/.joblib). Pastikan file berada di folder yang sama.")
+    st.error(f"Detail Error: {e}")
+    st.stop()
 
-# HEADER UTAMA APLIKASI
-st.title("💰 BijakPinjam")
-st.subheader("AI Loan Decision Support System (Tim PJK-GM032)")
-st.write(
-    "Aplikasi berbasis AI untuk membantu menganalisis kondisi finansial Anda "
-    "dan mendeteksi risiko pinjaman sebelum mengambil keputusan keuangan."
-)
-st.divider()
+# 3. Formulir Input Data Profil Finansial Nasabah
+st.markdown("#### 📋 Masukkan Profil Finansial Nasabah")
 
-# FORM INPUT DATA FINANSIAL PENGGUNA
-st.header("📋 Formulir Analisis Finansial")
-st.write("Silakan masukkan data keuangan Anda di bawah ini dengan jujur:")
-
-# Membuat kolom input agar tampilan lebih rapi
 col1, col2 = st.columns(2)
 
 with col1:
-    pendapatan_tahunan = st.number_input("Pendapatan Tahunan (Rupiah/Nilai Skala)", value=0.0, step=0.1)
-    total_utang_saat_ini = st.number_input("Total Utang Saat Ini", value=0.0, step=0.1)
-    jumlah_pinjaman_diajukan = st.number_input("Jumlah Pinjaman yang Diajukan", value=0.0, step=0.1)
-    tenor_bulan = st.number_input("Tenor Pinjaman (Bulan)", min_value=1, max_value=120, value=12)
-    bunga_tahunan = st.number_input("Bunga Tahunan (Kontrak/Persentase Skala)", value=0.0, step=0.01)
+    pendapatan_tahunan = st.number_input("Pendapatan Tahunan (Rp)", min_value=0, value=60000000, step=1000000)
+    total_utang_saat_ini = st.number_input("Total Utang Saat Ini (Rp)", min_value=0, value=10000000, step=500000)
+    jumlah_pinjaman_diajukan = st.number_input("Jumlah Pinjaman yang Diajukan (Rp)", min_value=0, value=15000000, step=500000)
 
 with col2:
-    monthly_installment = st.number_input("Angsuran Bulanan (Monthly Installment)", value=0.0, step=0.1)
-    debt_to_income_ratio = st.number_input("Rasio Utang terhadap Pendapatan (DTI)", value=0.0, step=0.1)
-    remaining_income = st.number_input("Sisa Pendapatan Bersih (Remaining Income)", value=0.0, step=0.1)
-    
-    # Dropdown untuk fitur kategorikal yang sudah di-encode sebelumnya
-    status_pekerjaan = st.selectbox("Status Pekerjaan", options=[0, 1, 2, 3], 
-                                    format_func=lambda x: f"Kategori Pekerjaan {x}")
-    status_kredit = st.selectbox("Status Kredit / Riwayat BI Checking", options=[0, 1, 2], 
-                                 format_func=lambda x: f"Kategori Riwayat {x}")
+    tenor_bulan = st.selectbox("Tenor Pinjaman (Bulan)", [12, 24, 36, 48, 60], index=1)
+    bunga_tahunan_persen = st.slider("Bunga Tahunan (%)", min_value=5.0, max_value=20.0, value=12.0, step=0.1)
+    bunga_tahunan = bunga_tahunan_persen / 100
+    status_pekerjaan = st.selectbox("Status Pekerjaan", ['Pegawai Tetap', 'Kontrak', 'Freelance', 'Wirausaha'])
 
-st.divider()
+st.markdown("---")
 
-# PROSES PREDIKSI DAN OUTPUT REKOMENDASI
-if st.button("🚀 Analisis Risiko Pinjaman", type="primary"):
+# 4. Eksekusi Prediksi saat Tombol di-Klik
+if st.button("🔮 Analisis Risiko Kredit", use_container_width=True):
     
-    # Menyusun data input menjadi DataFrame dengan 9 fitur yang dilatih oleh model
+    # --- PROSES FEATURE ENGINEERING (Sama persis dengan notebook training) ---
+    bunga_bulanan = bunga_tahunan / 12
+    monthly_installment = (jumlah_pinjaman_diajukan / tenor_bulan) + (jumlah_pinjaman_diajukan * bunga_bulanan)
+    
+    pendapatan_bulanan = pendapatan_tahunan / 12
+    estimasi_cicilan_lama = total_utang_saat_ini * 0.05
+    
+    debt_to_income_ratio = (monthly_installment + estimasi_cicilan_lama) / pendapatan_bulanan
+    remaining_income = pendapatan_bulanan - (monthly_installment + estimasi_cicilan_lama)
+    
+    # --- PROSES ENCODING ---
+    try:
+        status_pekerjaan_encoded = encoder_pekerjaan.transform([status_pekerjaan])[0]
+    except:
+        status_pekerjaan_encoded = 0
+
+    # --- MEMBENTUK DATAFRAME SESUAI URUTAN FITUR TRAINING ---
     input_data = pd.DataFrame([{
         'pendapatan_tahunan': pendapatan_tahunan,
         'total_utang_saat_ini': total_utang_saat_ini,
@@ -70,31 +81,50 @@ if st.button("🚀 Analisis Risiko Pinjaman", type="primary"):
         'monthly_installment': monthly_installment,
         'debt_to_income_ratio': debt_to_income_ratio,
         'remaining_income': remaining_income,
-        'status_pekerjaan_encoded': status_pekerjaan
+        'status_pekerjaan_encoded': status_pekerjaan_encoded
     }])
+
+    # --- PROSES SCALING (Hanya pada kolom numerik) ---
+    kolom_numerik = ['pendapatan_tahunan', 'total_utang_saat_ini', 'jumlah_pinjaman_diajukan', 
+                     'monthly_installment', 'debt_to_income_ratio', 'remaining_income']
     
-    # Menjalankan fungsi prediksi model
+    input_data[kolom_numerik] = scaler.transform(input_data[kolom_numerik])
+
+    # Memastikan urutan kolom tidak bergeser sebelum masuk ke model prediksi
+    feature_order = [
+        'pendapatan_tahunan', 'total_utang_saat_ini', 'jumlah_pinjaman_diajukan',
+        'tenor_bulan', 'bunga_tahunan', 'monthly_installment', 
+        'debt_to_income_ratio', 'remaining_income', 'status_pekerjaan_encoded'
+    ]
+    input_data = input_data[feature_order]
+
+    # --- PROSES PREDIKSI MODEL ---
     prediction = model.predict(input_data)[0]
-    prediction_proba = model.predict_proba(input_data)[0][1] # Probabilitas risiko (Kelas 1)
+    prediction_proba = model.predict_proba(input_data)[0]
+
+    # Menentukan teks label status berdasarkan encoder
+    try:
+        target_label = encoder_kredit.inverse_transform([prediction])[0]
+    except:
+        target_label = "Lancar" if prediction == 0 else "Macet"
+
+    # --- TAMPILAN OUTPUT HASIL EVALUASI ---
+    st.markdown("### 📊 Hasil Penilaian Risiko")
     
-    st.header("📊 Hasil Analisis AI BijakPinjam")
-    
-    # Menampilkan indikator probabilitas risiko
-    st.metric(label="Tingkat Keyakinan Risiko AI", value=f"{prediction_proba * 100:.2f}%")
-    
-    # Aturan Output Rekomendasi
-    if prediction == 1:
-        st.error("🚨 **PERINGATAN: RISIKO TINGGI (BERISIKO GAGAL BAYAR)**")
-        st.write(
-            "**Rekomendasi Edukatif BijakPinjam:**\n"
-            "Kondisi finansial Anda saat ini menunjukkan indikasi kuat kerentanan keuangan. "
-            "Kami menyarankan Anda untuk **menunda pengajuan pinjaman ini** guna menghindari efek "
-            "lingkaran setan utang (*debt trap*)."
-        )
+    if prediction == 0:
+        st.success(f"### 🎉 **REKOMENDASI: DISETUJUI ({target_label.upper()})**")
+        st.write(f"Sistem menilai nasabah ini memiliki risiko rendah. Probabilitas Kelancaran: **{prediction_proba[0]*100:.2f}%**")
     else:
-        st.success("✅ **KONDISI AMAN (RISIKO RENDAH)**")
-        st.write(
-            "**Rekomendasi Edukatif BijakPinjam:**\n"
-            "Kondisi keuangan Anda dinilai sehat untuk mengambil pinjaman ini. "
-            "Pastikan Anda menggunakan dana secara produktif dan membayar cicilan tepat waktu!"
-        )
+        st.error(f"### ⚠️ **REKOMENDASI: DITOLAK ({target_label.upper()})**")
+        st.write(f"Sistem menilai nasabah ini berisiko tinggi mengalami gagal bayar. Probabilitas Macet: **{prediction_proba[1]*100:.2f}%**")
+
+    # Menampilkan rincian metrik finansial hasil kalkulasi engine
+    st.markdown("#### 🔍 Detail Metrik Finansial Hasil Kalkulasi Engine:")
+    col_m1, col_m2, col_m3 = st.columns(3)
+    col_m1.metric("Cicilan Bulanan (Estimasi)", f"Rp {monthly_installment:,.0f}")
+    col_m2.metric("Rasio Beban Utang (DTI)", f"{debt_to_income_ratio:.2f}")
+    col_m3.metric("Sisa Pendapatan Bersih", f"Rp {remaining_income:,.0f}")
+    
+    # Alert system tambahan berdasarkan teori finansial
+    if debt_to_income_ratio > 0.45:
+        st.warning("⚠️ **Peringatan Sistem:** Rasio Debt-to-Income (DTI) nasabah melebihi batas aman (45%). Beban cicilan terlalu berat dibandingkan total pendapatan bulanan.")
