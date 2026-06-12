@@ -3,14 +3,14 @@ import pandas as pd
 import numpy as np
 import joblib
 
-# 1. SETTING HALAMAN UTAMA
+# SETTING HALAMAN UTAMA
 st.set_page_config(
     page_title="BijakPinjam - AI Loan Decision Support System",
     page_icon="💰",
     layout="centered"
 )
 
-# 2. LOAD MODEL XGBOOST YANG SUDAH DIOPTIMASI
+# LOAD MODEL XGBOOST YANG SUDAH DIOPTIMASI
 @st.cache_resource
 def load_model():
     # Memuat model final XGBoost yang telah kita simpan sebelumnya
@@ -21,7 +21,7 @@ try:
 except Exception as e:
     st.error(f"Gagal memuat model. Pastikan file 'model_risiko_pinjaman_xgb.pkl' ada di folder yang sama. Error: {e}")
 
-# 3. HEADER UTAMA APLIKASI
+# HEADER UTAMA APLIKASI
 st.title("💰 BijakPinjam")
 st.subheader("AI Loan Decision Support System (Tim PJK-GM032)")
 st.write(
@@ -30,7 +30,7 @@ st.write(
 )
 st.divider()
 
-# 4. FORM INPUT DATA FINANSIAL PENGGUNA
+# FORM INPUT DATA FINANSIAL PENGGUNA
 st.header("📋 Formulir Analisis Finansial")
 st.write("Silakan masukkan data keuangan Anda di bawah ini dengan jujur:")
 
@@ -57,7 +57,7 @@ with col2:
 
 st.divider()
 
-# 5. PROSES PREDIKSI DAN OUTPUT REKOMENDASI
+# PROSES PREDIKSI DAN OUTPUT REKOMENDASI
 if st.button("🚀 Analisis Risiko Pinjaman", type="primary"):
     
     # Menyusun data input menjadi DataFrame dengan 9 fitur yang dilatih oleh model
