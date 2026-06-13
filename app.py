@@ -8,7 +8,7 @@ from backend import hitung_risiko_pinjaman
 
 st.set_page_config(
     page_title="BijakPinjam",
-    page_icon="💳",
+    page_icon=":material/credit_card:",
     layout="wide"
 )
 
@@ -43,7 +43,7 @@ st.markdown("""
 
 with st.sidebar:
 
-    st.title("💳 BijakPinjam")
+    st.title(":material/credit_card: BijakPinjam")
 
     st.caption(
         "AI Loan Decision Support System"
@@ -54,20 +54,20 @@ with st.sidebar:
     menu = st.radio(
         "Pilih Menu",
         [
-            "Belum Pinjam",
-            "Sudah Pinjam",
-            "Tentang Model"
+            ":material/playlist_add: Belum Pinjam",
+            ":material/history: Sudah Pinjam",
+            ":material/info: Tentang Model"
         ]
     )
 
     st.divider()
 
     st.success(
-        "🤖 XGBoost Classifier"
+        ":material/smart_toy: XGBoost Classifier"
     )
 
     st.info(
-        "🎯 Accuracy 80.31%"
+        ":material/ads_click: Accuracy 80.31%"
     )
 
 # =====================================================
@@ -75,7 +75,7 @@ with st.sidebar:
 # =====================================================
 
 st.title(
-    "💳 Sistem Analisis & Rekomendasi Pinjaman Berbasis AI"
+    ":material/credit_card: Sistem Analisis & Rekomendasi Pinjaman Berbasis AI"
 )
 
 st.caption(
@@ -109,22 +109,22 @@ def tampilkan_hasil(data, pendapatan, pengeluaran):
     col1, col2, col3, col4 = st.columns(4)
 
     col1.metric(
-        "💸 Cicilan Bulanan",
+        ":material/payments: Cicilan Bulanan",
         f"Rp {data['cicilan_bulanan']:,.0f}"
     )
 
     col2.metric(
-        "🏦 Total Pinjaman",
+        ":material/account_balance: Total Pinjaman",
         f"Rp {data['total_pinjaman']:,.0f}"
     )
 
     col3.metric(
-        "💰 Sisa Pendapatan",
+        ":material/savings: Sisa Pendapatan",
         f"Rp {data['sisa_pendapatan']:,.0f}"
     )
 
     col4.metric(
-        "📊 DTI",
+        ":material/percent: DTI",
         f"{data['rasio_hutang']}%"
     )
 
@@ -165,25 +165,25 @@ def tampilkan_hasil(data, pendapatan, pengeluaran):
         if data["risk_level"] == "Bahaya":
 
             st.error(
-                f"🚨 Risiko Tinggi ({data['risk_score']:.2f}%)"
+                f":material/gpp_bad: Risiko Tinggi ({data['risk_score']:.2f}%)"
             )
 
         elif data["risk_level"] == "Waspada":
 
             st.warning(
-                f"⚠️ Risiko Sedang ({data['risk_score']:.2f}%)"
+                f":material/warning: Risiko Sedang ({data['risk_score']:.2f}%)"
             )
 
         else:
 
             st.success(
-                f"✅ Risiko Rendah ({data['risk_score']:.2f}%)"
+                f":material/verified_user: Risiko Rendah ({data['risk_score']:.2f}%)"
             )
 
     with kanan:
 
         st.subheader(
-            "📈 Financial Health Score"
+            ":material/show_chart: Financial Health Score"
         )
 
         st.progress(
@@ -210,18 +210,18 @@ def tampilkan_hasil(data, pendapatan, pengeluaran):
                 f"Score: {data['financial_health_score']}/100\n\nStatus: {data['health_level']}"
             )
 
-        st.subheader("🤖 Insight AI")
+        st.subheader(":material/psychology: Insight AI")
 
         for item in data["insight"]:
             st.info("• " + item)
 
-        st.subheader("💡 Rekomendasi")
+        st.subheader(":material/lightbulb: Rekomendasi")
 
         for item in data["rekomendasi"]:
-            st.write("✅ " + item)
+            st.write(":material/check_circle: " + item)
 
 
-    st.subheader("📊 Visualisasi Keuangan")
+    st.subheader(":material/bar_chart: Visualisasi Keuangan")
 
     chart1, chart2, chart3 = st.columns(3)
 
@@ -287,7 +287,7 @@ def tampilkan_hasil(data, pendapatan, pengeluaran):
             use_container_width=True
         )
 
-    st.subheader("📈 Dampak Pinjaman terhadap Cashflow")
+    st.subheader(":material/trending_up: Dampak Pinjaman terhadap Cashflow")
 
     sisa_sebelum = (
         pendapatan
@@ -333,10 +333,10 @@ def tampilkan_hasil(data, pendapatan, pengeluaran):
 # BELUM PINJAM
 # =====================================================
 
-if menu == "Belum Pinjam":
+if menu == ":material/playlist_add: Belum Pinjam":
 
     st.subheader(
-        "📝 Simulasi Pengajuan Pinjaman Baru"
+        ":material/edit_document: Simulasi Pengajuan Pinjaman Baru"
     )
 
     col1,col2 = st.columns(2)
@@ -395,7 +395,7 @@ if menu == "Belum Pinjam":
         )
 
     if st.button(
-        "🚀 Analisis Sekarang",
+        ":material/rocket_launch: Analisis Sekarang",
         use_container_width=True
     ):
 
@@ -426,10 +426,10 @@ if menu == "Belum Pinjam":
 # SUDAH PINJAM
 # =====================================================
 
-elif menu == "Sudah Pinjam":
+elif menu == ":material/history: Sudah Pinjam":
 
     st.subheader(
-        "🏦 Simulasi Pinjaman Tambahan"
+        ":material/account_balance: Simulasi Pinjaman Tambahan"
     )
 
     col1,col2 = st.columns(2)
@@ -485,7 +485,7 @@ elif menu == "Sudah Pinjam":
         )
 
     if st.button(
-        "📈 Analisis Pinjaman Tambahan",
+        ":material/trending_up: Analisis Pinjaman Tambahan",
         use_container_width=True
     ):
 
@@ -519,7 +519,7 @@ elif menu == "Sudah Pinjam":
 
 else:
 
-    st.header("🤖 Tentang Model")
+    st.header(":material/smart_toy: Tentang Model")
 
     st.success(
         """
@@ -536,7 +536,7 @@ F1 Score : 75%
     )
 
     st.subheader(
-        "🏆 Feature Importance"
+        ":material/star: Feature Importance"
     )
 
     st.markdown("""
