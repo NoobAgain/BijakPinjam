@@ -220,7 +220,6 @@ def tampilkan_hasil(data, pendapatan, pengeluaran):
         for item in data["rekomendasi"]:
             st.write("✅ " + item)
 
-            st.divider()
 
     st.subheader("📊 Visualisasi Keuangan")
 
